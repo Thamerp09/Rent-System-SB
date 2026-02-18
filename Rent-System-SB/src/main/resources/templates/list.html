@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${currentPage == 'dashboard'} ? 'Dashboard' : 'Dashboard'"></title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/list-style.css}">
+</head>
+
+<body>
+
+    <button id="theme-toggle-floating" class="theme-toggle-floating" title="تبديل الوضع">
+        <i class="fa-solid fa-moon"></i>
+    </button>
+
+    <div class="app-container">
+        <!-- رأس التطبيق لسطح المكتب -->
+        <header class="desktop-header">
+            <a th:href="@{/}" class="app-brand">نظام الإيجارات</a>
+            <nav class="desktop-nav">
+                <a th:href="@{/list}" class="nav-link" th:classappend="${currentPage == 'list'} ? 'active' : ''">قائمة
+                    العقود</a>
+                <a th:href="@{/dashboard}" class="nav-link"
+                    th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">المعلومات المالية</a>
+            </nav>
+            <button id="theme-toggle-desktop" class="theme-toggle-button"><i class="fa-solid fa-moon"></i></button>
+        </header>
+
+        <main class="main-content">
+
+
+            <!-- ======================= صفحة قائمة العقود ======================= -->
+            <div th:if="${currentPage == 'list'}">
+                <header class="page-header">
+                    <div class="header-title">
+                        <h1>قائمة العقود</h1>
+                        <span class="header-subtitle" th:text="'لديك ' + ${#lists.size(tenants)} + ' عقد مسجل'"></span>
+                    </div>
+                    <a th:href="@{/register}" class="button button-primary "><i class="fa-solid fa-plus"></i><span>إضافة
+                            عقد</span></a>
+
+
+                    <a th:href="@{/payments/entry}" class="button button-primary "><i
+                            class="fa-solid fa-plus"></i><span>سداد مبلغ معين من الدفعة</span></a>
+
+
+                </header>
+                <div class="search-bar-container">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="ابحث عن مستأجر...">
+                    </div>
+                </div>
+
+                <!-- إضافة أزرار الفرز حسب المدينة -->
+                <div class="city-filter-container">
+                    <button class="filter-button active" data-city="all">الكل</button>
+                    <!-- تم تعديل data-city هنا -->
+                    <button class="filter-button" data-city="مكة المكرمة">مكة المكرمة</button>
+                    <button class="filter-button" data-city="الرياض">الرياض</button>
+                </div>
+
+                <ul id="contractList" class="contract-list">
+                    <li class="no-results" style="display: none;">
+                        <p class="no-data-inline">لا توجد نتائج مطابقة.</p>
+                    </li>
+                    <li th:if="${#lists.isEmpty(tenants)}">
+                        <p class="no-data-inline">لا توجد عقود مسجلة بعد.</p>
+                    </li>
+                    <!-- إضافة سمة data-city لكل عنصر عقد -->
+                    <li class="contract-item" th:each="form, iterStat : ${tenants}"
+                        th:onclick="'showModal(\'contractDetailsModal-' + ${iterStat.index} + '\')'"
+                        th:data-city="${form.contract?.location?.arabicName}">
+                        <div class="contract-info">
+                            <h3 th:text="${form.tenant.name}"></h3>
+                            <div class="contract-meta">
+                                <span th:text="${form.contract?.location?.arabicName}"></span> &bull; <span
+                                    th:text="'ينتهي في: ' + ${form.contract?.contractEnd}"></span>
+                            </div>
+                        </div>
+                        <div class="contract-actions">
+                            <span class="contract-status" th:text="${form.contractStatus?.displayName ?: 'غير معروف'}"
+                                th:with="statusClass=${
+                                      (form.contractStatus?.name() == 'ACTIVE') ? 'status-active' :
+                                      ((form.contractStatus?.name() == 'EXPIRING_SOON') ? 'status-expiring' :
+                                      ((form.contractStatus?.name() == 'EXPIRED') ? 'status-expired' : 'status-default'))
+                                  }" th:classappend="${statusClass}"></span>
+                            <i class="fa-solid fa-chevron-left details-arrow"></i>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- شريط التنقل السفلي المبتكر للجوال - تم نسخه لصق من الداشبورد مع تعديل الـ active class -->
+    <nav class="mobile-bottom-nav">
+        <a th:href="@{/list}" class="nav-item" th:classappend="${currentPage == 'list'} ? 'active' : ''"><i
+                class="fa-solid fa-file-invoice"></i><span>العقود</span></a>
+        <a th:href="@{/dashboard}" class="nav-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''"><i
+                class="fa-solid fa-chart-pie"></i><span>المالية</span></a>
+        <a th:href="@{/register}" class="nav-item add-button"><i class="fa-solid fa-plus"></i></a>
+        <a th:href="@{/home}" class="nav-item" th:classappend="${currentPage == 'home'} ? 'active' : ''"><i
+                class="fa-solid fa-house"></i><span>الرئيسية</span></a>
+        <a th:href="@{/files}" class="nav-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''"><i
+                class="fa-solid fa-folder-open"></i><span>الملفات</span></a>
+    </nav>
+
+    <!-- المودالات - لم يتم المساس بها -->
+    <div th:each="form, iterStat : ${tenants}">
+        <!-- مودال تفاصيل العقد -->
+        <div th:id="'contractDetailsModal-' + ${iterStat.index}" class="modal-overlay">
+            <div class="modal-content">
+                <button th:onclick="'hideModal(\'contractDetailsModal-' + ${iterStat.index} + '\')'"
+                    class="modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+                <h3>تفاصيل عقد <span th:text="${form.tenant.name}"></span></h3>
+                <dl class="details-list">
+                    <dt>الموقع:</dt>
+                    <dd th:text="${form.contract?.location?.arabicName}"></dd>
+                    <dt>بداية العقد:</dt>
+                    <dd th:text="${form.contract?.contractStart}"></dd>
+                    <dt>نهاية العقد:</dt>
+                    <dd th:text="${form.contract?.contractEnd}"></dd>
+                    <dt>قيمة الإيجار:</dt>
+                    <dd th:text="${form.contract?.rentAmount} + ' ر.س'"></dd>
+                    <dt>طريقة الدفع:</dt>
+                    <dd th:text="${form.contract?.paymentType?.displayName}"></dd>
+                </dl>
+                <div class="modal-actions">
+                    <button
+                        th:onclick="'hideModal(\'contractDetailsModal-' + ${iterStat.index} + '\'); showModal(\'paymentsModal-' + ${iterStat.index} + '\')'"
+                        class="button button-primary"><i class="fa-solid fa-wallet"></i><span>عرض
+                            الدفعات</span></button>
+                    <a th:href="@{/register(id=${form.contract.id})}" class="button button-secondary"><i
+                            class="fa-solid fa-pen"></i><span>تعديل</span></a>
+                    <form th:action="@{/contracts/delete/{id}(id=${form.contract.id})}" th:method="post"
+                        onsubmit="return confirm('هل أنت متأكد؟')">
+                        <button type="submit" class="button button-danger"><i
+                                class="fa-solid fa-trash-can"></i><span>حذف</span></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- مودال سجل الدفعات -->
+        <div th:id="'paymentsModal-' + ${iterStat.index}" class="modal-overlay">
+            <div class="modal-content">
+                <button th:onclick="'hideModal(\'paymentsModal-' + ${iterStat.index} + '\')'" class="modal-close-btn"><i
+                        class="fa-solid fa-xmark"></i></button>
+                <h3>سجل الدفعات لـ <span th:text="${form.tenant.name}"></span></h3>
+                <div class="table-wrapper">
+                    <table class="payment-table">
+                        <thead>
+                            <tr>
+                                <th>تاريخ الاستحقاق</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                                <th>إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="record : ${form.contract.rentRecords}">
+                                <td data-label="تاريخ الاستحقاق" th:text="${record.dueDate}"></td>
+                                <td data-label="المبلغ" th:text="${record.amount} + ' ر.س'"></td>
+                                <td data-label="الحالة"><span class="payment-status"
+                                        th:text="${record.paid} ? 'مدفوع' : 'غير مدفوع'"
+                                        th:classappend="${record.paid} ? 'paid' : 'unpaid'"></span></td>
+                                <td data-label="إجراء">
+                                    <form th:action="@{/records/toggle-status/{recordId}(recordId=${record.id})}"
+                                        th:method="post">
+                                        <button type="submit" class="button payment-action-btn"
+                                            th:classappend="${record.paid} ? 'unpay-btn' : 'pay-btn'">
+                                            <i
+                                                th:class="${record.paid} ? 'fa-solid fa-xmark' : 'fa-solid fa-check'"></i>
+                                            <span th:text="${record.paid} ? 'إلغاء' : 'دفع'"></span>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- السكربتات النهائية - تم تعديلها لدعم زر تبديل الثيم في الجوال ومنطق الفرز الجديد -->
+    <script>
+        function showModal(e) { document.getElementById(e)?.classList.add("is-visible") }
+        function hideModal(e) { document.getElementById(e)?.classList.remove("is-visible") }
+        window.addEventListener("click", e => { e.target.classList.contains("modal-overlay") && e.target.classList.remove("is-visible") }),
+            document.addEventListener("keydown", e => { "Escape" === e.key && document.querySelectorAll(".modal-overlay.is-visible").forEach(e => { e.classList.remove("is-visible") }) }),
+            document.addEventListener("DOMContentLoaded", () => {
+
+
+
+                // ==========================================================
+                // الجزء الثاني: وظائف تبديل الوضع الليلي والنهاري (النسخة النهائية)
+                // ==========================================================
+
+                // --- 1. تحديد كل أزرار تبديل الوضع الصحيحة ---
+                // يستهدف زر الهيدر العلوي، والزر العائم الزجاجي الجديد
+                const themeToggleButtons = document.querySelectorAll('#theme-toggle-desktop, #theme-toggle-floating');
+                const body = document.body;
+
+                // --- 2. وظيفة تطبيق الوضع وتغيير الأيقونات ---
+                const applyTheme = (isDarkMode) => {
+                    if (isDarkMode) {
+                        body.classList.add("dark-mode");
+                        // التأكد من أن btn موجود قبل تغيير محتواه
+                        themeToggleButtons.forEach(btn => { if (btn) btn.innerHTML = '<i class="fa-solid fa-sun"></i>'; });
+                    } else {
+                        body.classList.remove("dark-mode");
+                        themeToggleButtons.forEach(btn => { if (btn) btn.innerHTML = '<i class="fa-solid fa-moon"></i>'; });
+                    }
+                };
+
+                // --- 3. قراءة الوضع المحفوظ أو الافتراضي ---
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = savedTheme === 'dark' || (savedTheme === null && prefersDark);
+
+                // --- 4. تطبيق الوضع عند تحميل الصفحة ---
+                applyTheme(isDark);
+
+                // --- 5. ربط حدث النقر بكل زر ---
+                themeToggleButtons.forEach(btn => {
+                    // التأكد من وجود الزر قبل إضافة الحدث لتجنب الأخطاء
+                    if (btn) {
+                        btn.addEventListener("click", (e) => {
+                            e.preventDefault();
+                            const isDarkMode = body.classList.toggle("dark-mode");
+                            localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+                            applyTheme(isDarkMode);
+                        });
+                    }
+                });
+
+                // --- منطق البحث والفرز الجديد ---
+                const searchInput = document.getElementById("searchInput");
+                const contractList = document.getElementById("contractList");
+                const contractItems = document.querySelectorAll(".contract-item");
+                const noResults = contractList.querySelector(".no-results");
+
+                const cityFilterButtons = document.querySelectorAll('.filter-button');
+
+                let currentCityFilter = 'all';
+                let currentSearchTerm = '';
+
+                // دالة تطبيق جميع الفلاتر (البحث والمدينة)
+                function applyFilters() {
+                    let visibleCount = 0;
+                    contractItems.forEach(item => {
+                        // هنا يتم التحقق من قيمة data-city للعنصر (والتي ستكون "مكة المكرمة" أو "الرياض" أو غير ذلك)
+                        const itemCity = item.dataset.city;
+                        const tenantName = item.querySelector("h3").textContent.toLowerCase();
+
+                        // تحقق من تطابق المدينة
+                        const cityMatches = (currentCityFilter === 'all' || itemCity === currentCityFilter);
+                        // تحقق من تطابق البحث
+                        const searchMatches = tenantName.includes(currentSearchTerm);
+
+                        if (cityMatches && searchMatches) {
+                            item.style.display = 'grid';
+                            visibleCount++;
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+
+                    noResults.style.display = (visibleCount === 0) ? "block" : "none";
+                }
+
+                // الاستماع لأحداث النقر على أزرار الفرز حسب المدينة
+                cityFilterButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        // إزالة فئة 'active' من جميع الأزرار وإضافتها للزر الذي تم النقر عليه
+                        cityFilterButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+
+                        // تحديث فلتر المدينة الحالي بقيمة data-city الصحيحة
+                        currentCityFilter = button.dataset.city;
+                        applyFilters();
+                    });
+                });
+
+                // تعديل مستمع حدث الإدخال لحقل البحث
+                if (searchInput) {
+                    searchInput.addEventListener("input", e => {
+                        currentSearchTerm = e.target.value.toLowerCase();
+                        applyFilters();
+                    });
+                }
+
+                // تطبيق الفلاتر عند تحميل الصفحة لأول مرة
+                applyFilters();
+            });
+    </script>
+</body>
+
+</html>

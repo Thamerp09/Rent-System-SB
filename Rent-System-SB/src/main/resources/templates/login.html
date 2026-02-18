@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تسجيل الدخول | نظام الإدارة الفاخر</title>
+
+    <link rel="manifest" href="/manifest.json">
+
+    <link rel="apple-touch-icon" href="/images/logo.png">
+
+    <meta name="theme-color" content="#000000">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-gold: #b49457;
+            --btn-hover: #d4bc8d;
+            --bg-black: #000000;
+            --input-bg: rgba(255, 255, 255, 0.06);
+            --text-muted: #888888;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-black);
+            color: #ffffff;
+            min-height: 100dvh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .aura-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, rgba(180, 148, 87, 0.1) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .main-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        /* --- الميموجي المطور --- */
+        .memoji-container {
+            margin-bottom: 25px;
+            cursor: pointer;
+        }
+
+        #interactiveMemoji {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .pop-animation {
+            animation: magicPop 0.6s ease-in-out forwards;
+        }
+
+        @keyframes magicPop {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+                filter: blur(0);
+            }
+
+            40% {
+                transform: scale(0.2);
+                opacity: 0;
+                filter: blur(15px);
+            }
+
+            60% {
+                transform: scale(0.2);
+                opacity: 0;
+                filter: blur(15px);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                filter: blur(0);
+            }
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .brand-header h1 {
+            font-size: 1.7rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .brand-header p {
+            color: var(--primary-gold);
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        /* --- تصميم الفورم --- */
+        .login-form {
+            width: 100%;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            width: 100%;
+        }
+
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .input-group label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 400;
+            margin-right: 5px;
+        }
+
+        /* رابط نسيت كلمة المرور */
+        .forgot-link {
+            font-size: 0.75rem;
+            color: var(--primary-gold);
+            text-decoration: none;
+            font-weight: 600;
+            opacity: 0.8;
+            transition: 0.3s;
+        }
+
+        .forgot-link:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        .custom-input {
+            width: 100%;
+            height: 58px;
+            background-color: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 0 18px;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .custom-input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            background-color: rgba(180, 148, 87, 0.03);
+        }
+
+        .btn-submit {
+            width: 100%;
+            height: 62px;
+            background-color: var(--primary-gold);
+            color: #000000;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(180, 148, 87, 0.2);
+        }
+
+        .btn-submit:active {
+            transform: scale(0.97);
+        }
+
+        /* قسم إنشاء حساب جديد */
+        .signup-section {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .signup-link {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 700;
+            margin-right: 5px;
+            border-bottom: 1px solid var(--primary-gold);
+            padding-bottom: 2px;
+            transition: 0.3s;
+        }
+
+        .signup-link:hover {
+            color: var(--primary-gold);
+        }
+
+        .error-box {
+            width: 100%;
+            background: rgba(255, 82, 82, 0.1);
+            color: #ff5252;
+            padding: 12px;
+            border-radius: 14px;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .footer-info {
+            margin-top: 40px;
+            font-size: 0.65rem;
+            color: #333;
+            letter-spacing: 1px;
+        }
+
+        .success-alert {
+            background: rgba(25, 135, 84, 0.1);
+            color: #2ecc71;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ستظهر هذه الرسالة فقط إذا نجحت عملية تغيير كلمة المرور
+    <div th:if="${successMessage}" class="success-alert">
+        <i class="fa-solid fa-circle-check"></i> <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${param.error}" class="error-box">
+        بيانات الدخول غير صحيحة، يرجى المحاولة ثانية
+    </div>
+
+    <div th:if="${param.registered}" class="error-box" style="background: rgba(25, 135, 84, 0.1); color: #198754;">
+        تم إنشاء الحساب بنجاح! بانتظار تفعيل الإدارة.
+    </div> -->
+
+    <div class="aura-glow"></div>
+
+    <div class="main-wrapper">
+
+
+        <div class="memoji-container" onclick="playMemojiAnim()">
+            <img th:src="@{/images/memojiStill.png}" alt="Avatar" id="interactiveMemoji">
+        </div>
+
+        <div class="brand-header">
+            <h1>دخول النظام</h1>
+            <p>INTEGRATED PLATFORM</p>
+        </div>
+
+        <!-- 1. عرض رسالة النجاح (تم تغيير كلمة المرور) -->
+        <div th:if="${message}" class="success-alert">
+            <i class="fa-solid fa-circle-check"></i> <span th:text="${message}"></span>
+        </div>
+
+        <!-- 2. عرض رسالة الخطأ (بيانات دخول غلط) -->
+        <div th:if="${param.error}" class="error-box">
+            بيانات الدخول غير صحيحة، يرجى المحاولة ثانية
+        </div>
+
+        <!-- 3. عرض رسالة التسجيل الجديد -->
+        <div th:if="${param.registered}" class="success-alert"
+            style="background: rgba(25, 135, 84, 0.1); color: #2ecc71;">
+            تم إنشاء الحساب بنجاح! بانتظار تفعيل الإدارة.
+        </div>
+
+        <form th:action="@{/login}" method="post" class="login-form">
+            <div class="input-group">
+                <div class="input-header">
+                    <label>اسم المستخدم</label>
+                </div>
+                <input type="text" id="username" name="username" class="custom-input" placeholder="User ID" required
+                    autofocus>
+            </div>
+
+            <div class="input-group">
+                <div class="input-header">
+                    <label>كلمة المرور</label>
+                    <a th:href="@{/forgot-password}" class="forgot-link">نسيت كلمة المرور؟</a>
+                </div>
+                <input type="password" id="password" name="password" class="custom-input" placeholder="••••••••"
+                    required>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                تسجيل الدخول
+            </button>
+        </form>
+
+        <div class="signup-section">
+            ليس لديك حساب؟ <a th:href="@{/UserRegister}" class="signup-link">إنشاء حساب جديد</a>
+        </div>
+
+
+    </div>
+
+    <script th:inline="javascript">
+        const memoji = document.getElementById('interactiveMemoji');
+        const stillImg = /*[[@{/images/memojiStill.png}]]*/ 'default_still.png';
+        const wavingImg = /*[[@{/images/memoji-waving.png}]]*/ 'default_waving.png';
+
+        function playMemojiAnim() {
+            if (!memoji.classList.contains('pop-animation')) {
+                memoji.classList.add('pop-animation');
+                setTimeout(() => { memoji.src = wavingImg; }, 300);
+                setTimeout(() => {
+                    memoji.classList.remove('pop-animation');
+                    setTimeout(() => { memoji.src = stillImg; }, 1200);
+                }, 600);
+            }
+        }
+
+        if (memoji) {
+            memoji.addEventListener('mouseenter', () => memoji.src = wavingImg);
+            memoji.addEventListener('mouseleave', () => memoji.src = stillImg);
+        }
+    </script>
+</body>
+
+</html>

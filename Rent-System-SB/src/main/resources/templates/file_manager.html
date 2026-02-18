@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الملفات</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/files-style.css}">
+
+</head>
+
+<body>
+    <button id="theme-toggle-floating" class="theme-toggle-floating" title="تبديل الوضع">
+        <i class="fa-solid fa-moon"></i>
+    </button>
+    <div class="app-container">
+        <!-- رأس التطبيق لسطح المكتب -->
+        <header class="desktop-header">
+            <a th:href="@{/home}" class="app-brand">نظام الإيجارات</a>
+            <nav class="desktop-nav">
+                <a th:href="@{/list}" class="nav-link">قائمة العقود</a>
+                <a th:href="@{/dashboard}" class="nav-link">المعلومات المالية</a>
+                <a th:href="@{/files}" class="nav-link active">إدارة الملفات</a>
+            </nav>
+            <button id="theme-toggle-btn" class="theme-toggle-button"><i class="fa-solid fa-moon"></i></button>
+        </header>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>إدارة الملفات المحفوظة</h1>
+            </header>
+            <hr>
+
+            <!-- رسائل الحالة -->
+            <div th:if="${message}"
+                th:classappend="${message.startsWith('successfully') ? 'success-message' : 'danger-message'}"
+                class="content-card" style="padding: 1rem; margin-bottom: 1.5rem;">
+                <p th:text="${message}" style="margin: 0;"></p>
+            </div>
+
+            <!-- بطاقة رفع الملفات -->
+            <div class="content-card file-upload-card">
+                <div class="card-header">
+                    <h3>رفع ملف جديد</h3>
+                </div>
+                <form method="POST" th:action="@{/upload}" enctype="multipart/form-data">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <div class="drop-zone">
+                        <p class="drop-zone-text"><i class="fa-solid fa-cloud-arrow-up"></i> اسحب الملف هنا أو اضغط
+                            للاستعراض</p>
+                        <input type="file" name="file" required style="display: none;">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="uploadDisplayName">اسم للملف الجديد <span
+                                style="color: var(--danger-color);">*</span></label>
+                        <input type="text" id="uploadDisplayName" name="displayName" class="input-field"
+                            placeholder="أدخل اسماً واضحاً للملف (مطلوب)" required>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="uploadCategory">تصنيف الملف <span
+                                    style="color: var(--danger-color);">*</span></label>
+                            <select id="uploadCategory" name="category" class="input-field" required>
+                                <option value="" disabled selected>اختر الفئة</option>
+                                <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat.arabicName}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="uploadLocation">يخص عقار <span
+                                    style="color: var(--danger-color);">*</span></label>
+                            <select id="uploadLocation" name="location" class="input-field" required>
+                                <option value="" disabled selected>اختر الموقع</option>
+                                <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc.arabicName}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="button button-primary">
+                        <i class="fa-solid fa-upload"></i> رفع الملف
+                    </button>
+                </form>
+            </div>
+
+            <!-- بطاقة الفلاتر -->
+            <div class="content-card filter-container">
+                <div class="filter-group">
+                    <label for="categoryFilter"><i class="fa-solid fa-tags"></i> تصفية حسب التصنيف:</label>
+                    <select id="categoryFilter" class="input-field">
+                        <option value="all">الكل</option>
+                        <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat.arabicName}"></option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="locationFilter"><i class="fa-solid fa-map-marker-alt"></i> تصفية حسب الموقع:</label>
+                    <select id="locationFilter" class="input-field">
+                        <option value="all">الكل</option>
+                        <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc.arabicName}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- بطاقة عرض الملفات -->
+            <div class="content-card file-list-card">
+                <div class="card-header">
+                    <h3>الملفات المحفوظة (<span th:text="${files.size()}">0</span>)</h3>
+                </div>
+
+                <ul class="data-list">
+                    <li th:if="${#lists.isEmpty(files)}">
+                        <p class="no-data-inline">لا توجد ملفات محفوظة حاليًا.</p>
+                    </li>
+                    <!-- *** هذا هو السطر المصحح *** -->
+                    <li th:each="file : ${files}" class="file-item" th:data-category="${file.fileCategory}"
+                        th:data-location="${file.location}">
+                        <div class="item-details">
+                            <h4 class="item-title" th:text="${file.fileName}">اسم الملف</h4>
+                            <div class="item-meta">
+                                <span class="file-timestamp"><i class="fa-solid fa-calendar-days"></i> <span
+                                        th:text="(${file.uploadDate}) ? ${#temporals.format(file.uploadDate, 'yyyy-MM-dd HH:mm')} : 'تاريخ غير معروف'"></span></span>
+                                <span class="file-type"><i class="fa-solid fa-file-lines"></i> <span
+                                        th:text="${file.fileType}"></span></span>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button type="button" class="button button-icon btn-preview" title="معاينة"
+                                th:attr="data-file-id=${file.id}, data-file-name=${file.fileName}"
+                                onclick="openPreviewModalFromData(this)"><i class="fa-solid fa-eye"></i></button>
+                            <button type="button" class="button button-icon btn-edit" title="تعديل الاسم"
+                                th:attr="data-file-id=${file.id}, data-current-name=${file.fileName}"
+                                onclick="openEditModal(this)"><i class="fa-solid fa-pencil"></i></button>
+                            <a th:href="@{/download/{id}(id=${file.id})}" class="button button-icon btn-download"
+                                title="تنزيل"><i class="fa-solid fa-download"></i></a>
+                            <form th:action="@{/delete/{id}(id=${file.id})}" method="POST" style="display: inline;">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <button type="submit" class="button button-icon btn-delete" title="حذف"
+                                    th:attr="onclick='return confirmDelete(event, \'' + ${file.fileName} + '\')'"><i
+                                        class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- شريط التنقل السفلي للجوال -->
+    <nav class="mobile-bottom-nav">
+        <a th:href="@{/list}" class="nav-item"><i class="fa-solid fa-file-invoice"></i><span>العقود</span></a>
+        <a th:href="@{/dashboard}" class="nav-item"><i class="fa-solid fa-chart-pie"></i><span>المالية</span></a>
+        <a th:href="@{/register}" class="nav-item add-button"><i class="fa-solid fa-plus"></i></a>
+        <a th:href="@{/home}" class="nav-item"><i class="fa-solid fa-house"></i><span>الرئيسية</span></a>
+        <a th:href="@{/files}" class="nav-item active"><i class="fa-solid fa-folder-open"></i><span>الملفات</span></a>
+    </nav>
+
+    <!-- مودالات العرض والتعديل -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">معاينة الملف</h3><button class="close-button" onclick="closePreviewModal()"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="pdf-viewer-container"><embed id="pdfEmbed" type="application/pdf" width="100%"
+                        height="100%" /></div>
+            </div>
+        </div>
+    </div>
+    <div id="editNameModal" class="modal">
+        <div class="modal-content">
+            <form id="editNameForm" method="POST">
+                <div class="modal-header">
+                    <h3>تعديل اسم الملف</h3><button type="button" class="close-button" onclick="closeEditModal()"><i
+                            class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body"><input type="hidden" th:name="${_csrf.parameterName}"
+                        th:value="${_csrf.token}" /><input type="hidden" id="editFileId" name="fileId">
+                    <div class="form-group"><label for="newDisplayNameInput">الاسم الجديد للملف:</label><input
+                            type="text" id="newDisplayNameInput" name="newDisplayName" class="input-field" required>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" class="button"
+                        onclick="closeEditModal()">إلغاء</button><button type="submit" class="button button-primary">حفظ
+                        التغييرات</button></div>
+            </form>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // ==========================================================
+            // الجزء الأول: وظائف تبديل الوضع الليلي والنهاري
+            // ==========================================================
+            const themeToggleButtons = document.querySelectorAll('#theme-toggle-btn, #theme-toggle-floating');
+            const body = document.body;
+
+            const applyTheme = (isDarkMode) => {
+                if (isDarkMode) {
+                    body.classList.add('dark-mode');
+                    themeToggleButtons.forEach(btn => { if (btn) btn.innerHTML = '<i class="fa-solid fa-sun"></i>'; });
+                } else {
+                    body.classList.remove('dark-mode');
+                    themeToggleButtons.forEach(btn => { if (btn) btn.innerHTML = '<i class="fa-solid fa-moon"></i>'; });
+                }
+            };
+
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let isDark = savedTheme === 'dark' || (savedTheme === null && prefersDark);
+
+            applyTheme(isDark);
+
+            themeToggleButtons.forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        const isCurrentlyDark = body.classList.toggle('dark-mode');
+                        localStorage.setItem('theme', isCurrentlyDark ? 'dark' : 'light');
+                        applyTheme(isCurrentlyDark);
+                    });
+                }
+            });
+
+            // ==========================================================
+            // الجزء الثاني: تشغيل الوظائف الرئيسية بعد تحميل الصفحة
+            // ==========================================================
+            setupDragAndDrop();
+            setupFiltering();
+        });
+
+        // ==========================================================
+        // الجزء الثالث: تعريف الوظائف
+        // ==========================================================
+
+        // --- وظائف المودالات ---
+        const previewModal = document.getElementById("previewModal");
+        const editModal = document.getElementById("editNameModal");
+
+        function openPreviewModalFromData(buttonElement) {
+            const fileId = buttonElement.getAttribute('data-file-id');
+            const fileName = buttonElement.getAttribute('data-file-name');
+            if (fileId && fileName) {
+                const modalTitle = document.getElementById("modalTitle");
+                const pdfEmbed = document.getElementById("pdfEmbed");
+                if (modalTitle) modalTitle.textContent = 'معاينة: ' + fileName;
+                if (pdfEmbed) pdfEmbed.src = '/preview/' + fileId;
+                if (previewModal) previewModal.classList.add("show");
+            }
+        }
+
+        function closePreviewModal() { if (previewModal) previewModal.classList.remove("show"); setTimeout(() => { const pdfEmbed = document.getElementById("pdfEmbed"); if (pdfEmbed) pdfEmbed.src = "about:blank"; }, 300); }
+
+        function openEditModal(buttonElement) {
+            const fileId = buttonElement.getAttribute('data-file-id');
+            const currentName = buttonElement.getAttribute('data-current-name');
+            if (fileId && currentName) {
+                const editForm = document.getElementById("editNameForm");
+                const editFileIdInput = document.getElementById("editFileId");
+                const newDisplayNameInput = document.getElementById("newDisplayNameInput");
+                if (editFileIdInput) editFileIdInput.value = fileId;
+                if (newDisplayNameInput) newDisplayNameInput.value = currentName;
+                if (editForm) editForm.action = '/editName/' + fileId;
+                if (editModal) editModal.classList.add("show");
+                setTimeout(() => newDisplayNameInput.focus(), 300);
+            }
+        }
+
+        function closeEditModal() { if (editModal) editModal.classList.remove("show"); }
+
+        window.onclick = function (event) {
+            if (event.target == previewModal) closePreviewModal();
+            if (event.target == editModal) closeEditModal();
+        }
+
+        function confirmDelete(event, fileName) { if (!confirm('هل أنت متأكد من حذف الملف: ' + fileName + '؟')) { event.preventDefault(); } }
+
+        // --- وظيفة السحب والإفلات ---
+        function setupDragAndDrop() {
+            const dropZone = document.querySelector('.drop-zone');
+            if (!dropZone) return;
+            const fileInput = dropZone.querySelector('input[type=file]');
+            const dropZoneText = dropZone.querySelector('.drop-zone-text');
+            const originalTextHTML = dropZoneText.innerHTML;
+
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => updateDropZoneText(fileInput.files));
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); });
+            });
+            ['dragenter', 'dragover'].forEach(eventName => { dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over')); });
+            ['dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over')); });
+
+            dropZone.addEventListener('drop', e => {
+                fileInput.files = e.dataTransfer.files;
+                updateDropZoneText(fileInput.files);
+            });
+
+            function updateDropZoneText(files) {
+                if (files.length > 0) {
+                    dropZoneText.innerHTML = `<i class="fa-solid fa-file-circle-check" style="color: var(--success-color);"></i> ${files[0].name}`;
+                } else {
+                    dropZoneText.innerHTML = originalTextHTML;
+                }
+            }
+        }
+
+        // --- وظيفة الفلترة ---
+        function setupFiltering() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            const locationFilter = document.getElementById('locationFilter');
+            const fileList = document.querySelector('.file-list-card .data-list');
+            const allFileItems = document.querySelectorAll('.file-item');
+
+            if (!categoryFilter || !locationFilter || !fileList) return;
+
+            let noResultsMessage = fileList.querySelector('.no-results-message');
+            if (!noResultsMessage) {
+                noResultsMessage = document.createElement('li');
+                noResultsMessage.innerHTML = '<p class="no-data-inline">لا توجد ملفات تطابق معايير التصفية.</p>';
+                noResultsMessage.classList.add('no-results-message'); // إضافة كلاس لسهولة الاستهداف
+                noResultsMessage.style.display = 'none';
+                fileList.appendChild(noResultsMessage);
+            }
+
+            const originalNoDataMessage = fileList.querySelector('li:has(p.no-data-inline):not(.no-results-message)');
+
+            function applyFilters() {
+                const selectedCategory = categoryFilter.value;
+                const selectedLocation = locationFilter.value;
+                let visibleCount = 0;
+
+                allFileItems.forEach(item => {
+                    const itemCategory = item.dataset.category;
+                    const itemLocation = item.dataset.location;
+
+                    const categoryMatch = (selectedCategory === 'all' || itemCategory === selectedCategory);
+                    const locationMatch = (selectedLocation === 'all' || itemLocation === selectedLocation);
+
+                    if (categoryMatch && locationMatch) {
+                        item.style.display = 'grid';
+                        visibleCount++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                if (originalNoDataMessage) {
+                    originalNoDataMessage.style.display = 'none';
+                }
+
+                noResultsMessage.style.display = (visibleCount === 0 && allFileItems.length > 0) ? 'block' : 'none';
+            }
+
+            categoryFilter.addEventListener('change', applyFilters);
+            locationFilter.addEventListener('change', applyFilters);
+        }
+
+        /*]]>*/
+    </script>
+</body>
+
+</html>

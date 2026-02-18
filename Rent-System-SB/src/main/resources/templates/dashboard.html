@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الملخص المالي | لوحة التحكم </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard-style.css}">
+</head>
+
+<body class="loading"> <!-- لمنع وميض الوضع الداكن -->
+
+    <button id="theme-toggle-floating" class="theme-toggle-floating" title="تبديل الوضع">
+        <i class="fa-solid fa-moon"></i>
+    </button>
+
+    <div class="app-container">
+
+
+        <main class="main-content">
+            <!-- بطاقة عنوان الصفحة -->
+            <div class="page-title-card">
+                <div class="title-icon-wrapper"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <div class="title-text">
+                    <h1> أخبار الحلال؟</h1>
+                    <p>كل ريال محسوب، وكل حق مرصود</p>
+                    <p>نظرة شاملة على الايجارات </p>
+                </div>
+            </div>
+
+            <div class="stats-grid summary">
+                <div class="stat-card">
+                    <div class="card-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <h3>إجمالي الإيرادات</h3>
+                    <span class="stat-number"
+                        th:text="${#numbers.formatDecimal(financialSummary?.totalExpected, 0, 'COMMA', 0, 'POINT') ?: '0'} + ' ر.س'"></span>
+                </div>
+                <div class="stat-card success">
+                    <div class="card-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                    <h3>المبلغ المحصّل</h3>
+                    <span class="stat-number"
+                        th:text="${#numbers.formatDecimal(financialSummary?.totalCollected, 0, 'COMMA', 0, 'POINT') ?: '0'} + ' ر.س'"></span>
+                </div>
+                <div class="stat-card danger">
+                    <div class="card-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <h3>المبلغ المتبقي</h3>
+                    <span class="stat-number"
+                        th:text="${#numbers.formatDecimal(financialSummary?.totalRemaining, 0, 'COMMA', 0, 'POINT') ?: '0'} + ' ر.س'"></span>
+                </div>
+            </div>
+
+            <div class="content-card chart-container">
+                <div class="card-header">
+                    <h3>نظرة عامة على الإيرادات</h3>
+                    <span class="header-subtitle"
+                        th:text="'للعام ' + ${#dates.format(#dates.createNow(), 'yyyy')}"></span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="annualRevenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h3>الدفعات المستحقة الآن</h3>
+                        <span class="header-total danger"
+                            th:text="${#numbers.formatDecimal(financialSummary?.totalDueNowPayments, 0, 'COMMA', 0, 'POINT') ?: '0'} + ' ر.س'"></span>
+                    </div>
+                    <ul class="data-list">
+                        <li th:if="${#lists.isEmpty(dueNowPayments)}">
+                            <p class="no-data-message">لا توجد دفعات مستحقة حاليًا.</p>
+                        </li>
+                        <li th:each="payment : ${dueNowPayments}">
+                            <span class="item-title" th:text="${payment.contract.tenant.name}"></span>
+
+                            <span class="item-value danger"
+                                th:text="${#numbers.formatDecimal(payment.amount - (payment.paidAmount ?: 0), 0, 'COMMA', 2, 'POINT')} + ' ر.س'"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="content-card">
+                <div class="card-header">
+                    <h3>دفعات الشهرين الجاية</h3>
+                    <span class="header-total"
+                        th:text="${#numbers.formatDecimal(financialSummary?.totalUpcomingPayments, 0, 'COMMA', 0, 'POINT') ?: '0'} + ' ر.س'"></span>
+                </div>
+                <ul class="data-list">
+                    <li th:if="${#lists.isEmpty(upcomingPayments)}">
+                        <p class="no-data-message">لا توجد دفعات قادمة قريبًا.</p>
+                    </li>
+                    <li th:each="payment : ${upcomingPayments}" 
+                        th:classappend="${payment.projected} ? 'projected-item' : ''"> <div class="item-details">
+                            <span class="item-title">
+                                <span th:text="${payment.contract.tenant.name}"></span>
+                                <span th:if="${payment.projected}" class="badge-projected">(تجديد متوقع)</span>
+                            </span>
+                            
+                            <small class="item-subtitle"
+                                th:text="'تستحق في: ' + ${#temporals.format(payment.dueDate, 'dd MMMM yyyy', #locale.forLanguageTag('ar'))}"></small>
+                        </div>
+
+                        <span class="item-value"
+                             th:classappend="${payment.projected} ? 'text-warning' : ''" 
+                            th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 2, 'POINT')} + ' ر.س'"></span>
+                    </li>
+                </ul>
+            </div>
+    </div>
+    </main>
+    </div>
+
+    <!-- شريط التنقل السفلي المبتكر للجوال -->
+    <nav class="mobile-bottom-nav">
+        <a th:href="@{/list}" class="nav-item"><i class="fa-solid fa-file-invoice"></i><span>العقود</span></a>
+        <a th:href="@{/dashboard}" class="nav-item active"><i class="fa-solid fa-chart-pie"></i><span>المالية</span></a>
+        <a th:href="@{/register}" class="nav-item add-button"><i class="fa-solid fa-plus"></i></a>
+        <a th:href="@{/home}" class="nav-item"><i class="fa-solid fa-house"></i><span>الرئيسية</span></a>
+        <a th:href="@{/files}" class="nav-item"><i class="fa-solid fa-folder-open"></i><span>الملفات</span></a>
+    </nav>
+
+    <!-- المساعد الذكي (Chatbot) -->
+    <button id="chat-fab" class="chat-fab"><i class="fa-solid fa-robot"></i></button>
+    <div id="chat-widget" class="chat-widget">
+        <div class="chat-header">
+            <h3>المساعد الذكي</h3>
+            <button id="close-chat-btn" class="chat-close-btn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <div class="message assistant">
+                <p>أهلاً بك! أنا مساعدك الذكي. كيف يمكنني خدمتك اليوم؟</p>
+            </div>
+        </div>
+        <form id="chat-form" class="chat-form">
+            <input type="text" id="chat-input" placeholder="اسأل عن إيجار، عقد..." autocomplete="off" required>
+            <button type="submit" id="chat-submit-btn"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </div>
+
+
+
+
+    <!-- السكربتات النهائية -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            // ==========================================================
+            // الجزء الأول: تهيئة العناصر الرئيسية
+            // ==========================================================
+            const body = document.body;
+
+            // --- عناصر الرسم البياني ---
+            const chartCanvas = document.getElementById('annualRevenueChart');
+            const monthlyRevenueData = /*[[${monthlyRevenueData}]]*/ null;
+            let annualChart;
+            let chartThemeOptions = {};
+
+            // --- عناصر المساعد الذكي ---
+            const chatFab = document.getElementById('chat-fab');
+            const chatWidget = document.getElementById('chat-widget');
+            const closeChatBtn = document.getElementById('close-chat-btn');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+
+            // --- عناصر تبديل الوضع (مُعرَّفة هنا وسيتم استخدامها لاحقًا) ---
+            const themeToggleButtons = document.querySelectorAll('#theme-toggle-desktop, #theme-toggle-mobile, #theme-toggle-floating');
+
+
+            // ==========================================================
+            // الجزء الثاني: وظائف الرسم البياني
+            // ==========================================================
+            function updateChartTheme() {
+                // التحقق من وجود body قبل استخدامه
+                if (!body) return;
+                const computedStyles = getComputedStyle(body);
+                chartThemeOptions = {
+                    accentColor: computedStyles.getPropertyValue('--accent-color').trim(),
+                    hoverBgColor: computedStyles.getPropertyValue('--hover-bg').trim(),
+                    textColor: computedStyles.getPropertyValue('--text-secondary').trim()
+                };
+            }
+
+            function renderChart() {
+                if (annualChart) { annualChart.destroy(); }
+                if (!chartCanvas || !monthlyRevenueData) { return; }
+
+                const labels = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+                const dataValues = [
+                    monthlyRevenueData.JANUARY || 0, monthlyRevenueData.FEBRUARY || 0, monthlyRevenueData.MARCH || 0,
+                    monthlyRevenueData.APRIL || 0, monthlyRevenueData.MAY || 0, monthlyRevenueData.JUNE || 0,
+                    monthlyRevenueData.JULY || 0, monthlyRevenueData.AUGUST || 0, monthlyRevenueData.SEPTEMBER || 0,
+                    monthlyRevenueData.OCTOBER || 0, monthlyRevenueData.NOVEMBER || 0, monthlyRevenueData.DECEMBER || 0
+                ];
+
+                annualChart = new Chart(chartCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'الإيرادات',
+                            data: dataValues,
+                            backgroundColor: chartThemeOptions.accentColor + 'B3',
+                            borderColor: chartThemeOptions.accentColor,
+                            borderWidth: 1,
+                            borderRadius: 5,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { display: false }, // إخفاء أرقام الـ Y لتوفير مساحة للأشهر
+                                grid: { color: 'transparent' }
+                            },
+                            x: {
+                                ticks: {
+                                    color: chartThemeOptions.textColor,
+                                    autoSkip: false, // هذا السطر يمنع إخفاء أي شهر
+                                    font: { size: 9 }, // تصغير الخط قليلاً ليناسب الجوال
+                                    maxRotation: 45, // تدوير بسيط إذا لزم الأمر
+                                    minRotation: 45
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            // ==========================================================
+            // الجزء الثالث: وظائف المساعد الذكي
+            // ==========================================================
+
+            function addMessageToUI(text, sender) {
+                // التحقق من وجود العناصر قبل استخدامها
+                if (!chatMessages) return;
+
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', sender);
+
+                // --- التعديل هنا ---
+                // نتحقق أولاً هل المكتبة موجودة وهل الرسالة قادمة من المساعد (assistant)
+                if (sender === 'assistant' && typeof marked !== 'undefined') {
+                    // تحويل النجوم والرموز إلى HTML حقيقي
+                    messageDiv.innerHTML = marked.parse(text);
+                } else {
+                    // التعامل الطبيعي مع رسائل المستخدم (مجرد تحويل الأسطر الجديدة)
+                    messageDiv.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
+                }
+                // -------------------
+
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function showThinkingIndicator() {
+                if (!chatMessages) return;
+                const thinkingDiv = document.createElement('div');
+                thinkingDiv.classList.add('message', 'assistant', 'thinking');
+                thinkingDiv.innerHTML = `<p><span>.</span><span>.</span><span>.</span></p>`;
+                chatMessages.appendChild(thinkingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return thinkingDiv;
+            }
+
+            async function handleChatSubmit(event) {
+                event.preventDefault();
+                if (!chatInput) return;
+                const userMessage = chatInput.value.trim();
+                if (!userMessage) return;
+                addMessageToUI(userMessage, 'user');
+                chatInput.value = '';
+                chatInput.disabled = true;
+                const thinkingDiv = showThinkingIndicator();
+                try {
+                    const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: userMessage }) });
+                    if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
+                    const data = await response.json();
+                    if (thinkingDiv) thinkingDiv.remove();
+                    addMessageToUI(data.response, 'assistant');
+                } catch (error) {
+                    if (thinkingDiv) thinkingDiv.remove();
+                    addMessageToUI('عذرًا، حدث خطأ أثناء الاتصال. يرجى المحاولة مرة أخرى.', 'assistant error');
+                    console.error('Chat Error:', error);
+                } finally {
+                    chatInput.disabled = false;
+                    chatInput.focus();
+                }
+            }
+
+            // ربط أحداث المساعد الذكي
+            if (chatFab && chatWidget && closeChatBtn && chatForm) {
+                chatFab.addEventListener('click', () => chatWidget.classList.add('active'));
+                closeChatBtn.addEventListener('click', () => chatWidget.classList.remove('active'));
+                chatForm.addEventListener('submit', handleChatSubmit);
+            }
+
+
+            // ==========================================================
+            // الجزء الرابع: وظائف تبديل الوضع الليلي والنهاري (آخر شيء)
+            // ==========================================================
+            const applyTheme = (isDarkMode) => {
+                if (!body) return;
+                if (isDarkMode) {
+                    body.classList.add('dark-mode');
+                    themeToggleButtons.forEach(btn => {
+                        if (btn) {
+                            const span = btn.querySelector('span');
+                            // الحفاظ على النص إن وجد (مفيد للزر في الشريط السفلي)
+                            btn.innerHTML = '<i class="fa-solid fa-sun"></i>' + (span ? `<span>${span.textContent}</span>` : '');
+                        }
+                    });
+                } else {
+                    body.classList.remove('dark-mode');
+                    themeToggleButtons.forEach(btn => {
+                        if (btn) {
+                            const span = btn.querySelector('span');
+                            btn.innerHTML = '<i class="fa-solid fa-moon"></i>' + (span ? `<span>${span.textContent}</span>` : '');
+                        }
+                    });
+                }
+                // استدعاء تحديث الرسم البياني بعد تغيير الوضع
+                updateChartTheme();
+                renderChart();
+            };
+
+            // ربط حدث النقر لكل زر
+            themeToggleButtons.forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const isCurrentlyDark = body.classList.toggle('dark-mode');
+                        localStorage.setItem('theme', isCurrentlyDark ? 'dark' : 'light');
+                        applyTheme(isCurrentlyDark);
+                    });
+                }
+            });
+
+            // ==========================================================
+            // الجزء الخامس: التنفيذ عند تحميل الصفحة
+            // ==========================================================
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = savedTheme === 'dark' || (savedTheme === null && prefersDark);
+
+            // تطبيق الوضع عند تحميل الصفحة لأول مرة
+            // هذا سيقوم بتشغيل renderChart أيضًا من خلال دالة applyTheme
+            applyTheme(isDark);
+
+            // إزالة كلاس التحميل لمنع الوميض بعد تطبيق كل شيء
+            if (body) {
+                body.classList.remove('loading');
+            }
+
+        }); // نهاية حدث DOMContentLoaded
+
+        /*]]>*/
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب جديد</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-gold: #b49457;
+            --bg-black: #000000;
+            --input-bg: rgba(255, 255, 255, 0.06);
+            --text-muted: #888888;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-black);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-weight: 300;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: var(--primary-gold);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .input-group label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .custom-input {
+            width: 100%;
+            height: 50px;
+            background-color: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0 15px;
+            color: white;
+            font-family: inherit;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .custom-input:focus {
+            border-color: var(--primary-gold);
+        }
+
+        .btn-submit {
+            width: 100%;
+            height: 55px;
+            background-color: var(--primary-gold);
+            color: black;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #d4bc8d;
+        }
+
+        .alert-danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+
+        .login-link {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .login-link a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid var(--primary-gold);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <h1>حساب جديد</h1>
+            <p>JOIN THE PLATFORM</p>
+        </div>
+
+        <div th:if="${error}" class="alert-danger">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <form th:action="@{/UserRegister}" th:object="${user}" method="post">
+
+            <div class="input-group">
+                <label>اسم المستخدم</label>
+                <input type="text" th:field="*{username}" class="custom-input" placeholder="Thamer" required>
+            </div>
+
+            <div class="input-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" th:field="*{email}" class="custom-input" placeholder="email@example.com" required>
+            </div>
+
+
+
+            <div class="input-group">
+                <label>كلمة المرور</label>
+                <input type="password" th:field="*{password}" class="custom-input" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-submit">تسجيل الحساب</button>
+        </form>
+
+        <div class="login-link">
+            لديك حساب بالفعل؟ <a th:href="@{/login}">تسجيل الدخول</a>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>لوحة التحكم | نظام الإدارة الفاخر</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- المتغيرات والألوان الأساسية (الوضع الليلي الافتراضي) --- */
+        :root {
+            --primary-gold: #b49457;
+            --gold-dim: #8a6d35;
+            --bg-main: #000000;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-hover: rgba(180, 148, 87, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --danger: #ff5252;
+            --success: #198754;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --modal-bg: #121212;
+            --glow-color: rgba(180, 148, 87, 0.08);
+        }
+
+        /* --- إعدادات الوضع النهاري (Light Mode) --- */
+        body.light-mode {
+            --bg-main: #f4f7f6;
+            --card-bg: #ffffff;
+            --card-hover: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border-color: #e0e0e0;
+            --modal-bg: #ffffff;
+            --glow-color: rgba(180, 148, 87, 0.15);
+        }
+
+        /* --- التنسيق العام --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100dvh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* --- الخلفية المتوهجة --- */
+        .aura-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            transition: background 0.3s ease;
+        }
+
+        /* --- الأزرار العائمة (الثيم والإشعارات) --- */
+        .floating-btn {
+            position: fixed;
+            top: 20px;
+            z-index: 100;
+            background: rgba(180, 148, 87, 0.1);
+            border: 1px solid var(--primary-gold);
+            color: var(--primary-gold);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .floating-btn:hover {
+            background: var(--primary-gold);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(180, 148, 87, 0.3);
+            transform: translateY(-2px);
+        }
+
+        #theme-toggle-btn {
+            left: 20px;
+        }
+
+        .notification-button {
+            right: 20px;
+        }
+
+        /* شارة الإشعارات */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 4px;
+            border: 2px solid var(--bg-main);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 6px rgba(255, 82, 82, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+            }
+        }
+
+        /* --- الحاوية الرئيسية --- */
+        .main-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 900px;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- الهيدر والميموجي --- */
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .memoji-container {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .memoji-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .memoji-container:hover {
+            transform: scale(1.05);
+        }
+
+        .brand-header h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .brand-header span {
+            display: block;
+            color: var(--primary-gold);
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .brand-header p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* --- شبكة البطاقات (Dashboard Grid) --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            width: 100%;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .action-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            text-decoration: none;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        /* تعديلات خاصة بالوضع النهاري للبطاقات */
+        body.light-mode .action-card {
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .action-card:hover {
+            border-color: var(--primary-gold);
+            background-color: var(--card-hover);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(180, 148, 87, 0.15);
+        }
+
+        .icon-box {
+            font-size: 2rem;
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+            width: 60px;
+            height: 60px;
+            background: rgba(180, 148, 87, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .action-card:hover .icon-box {
+            background: var(--primary-gold);
+            color: #000;
+            /* الأيقونة تصبح سوداء داخل الدائرة الذهبية */
+            transform: scale(1.1);
+        }
+
+        /* في الوضع النهاري نريد الأيقونة بيضاء عند الهوفر */
+        body.light-mode .action-card:hover .icon-box {
+            color: #fff;
+        }
+
+        .action-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .action-card p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* --- الفوتر --- */
+        .footer-info {
+            margin-top: 50px;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            border: 1px solid rgba(180, 148, 87, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: background-color 0.3s;
+        }
+
+        .modal-header {
+            padding: 1.2rem;
+            background: rgba(180, 148, 87, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h3 {
+            color: var(--primary-gold);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .close-modal {
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        .modal-body {
+            padding: 1rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 10px;
+            background: rgba(180, 148, 87, 0.03);
+            border-radius: 12px;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .user-item:hover {
+            border-color: rgba(180, 148, 87, 0.3);
+            background: rgba(180, 148, 87, 0.08);
+        }
+
+        .user-name {
+            color: var(--text-primary);
+            font-weight: bold;
+            display: block;
+        }
+
+        .user-email {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn-modal {
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .approve-btn {
+            background: rgba(25, 135, 84, 0.15);
+            color: #198754;
+        }
+
+        .approve-btn:hover {
+            background: #198754;
+            color: white;
+        }
+
+        .reject-btn {
+            background: rgba(255, 82, 82, 0.15);
+            color: #ff5252;
+        }
+
+        .reject-btn:hover {
+            background: #ff5252;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: rgba(180, 148, 87, 0.3);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .brand-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .main-wrapper {
+                width: 92%;
+            }
+        }
+
+        /* تحسين صناديق التنبيه */
+        .success-alert {
+            background: rgba(25, 135, 84, 0.1);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            animation: slideDown 0.5s ease;
+        }
+
+        .error-box {
+            background: rgba(255, 82, 82, 0.1);
+            color: #ff5252;
+            border: 1px solid rgba(255, 82, 82, 0.3);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="theme-toggle-btn" class="floating-btn" aria-label="تبديل الوضع">
+        <i class="fa-solid fa-moon"></i>
+    </button>
+
+    <button class="floating-btn notification-button" onclick="openModal()" aria-label="الإشعارات"
+        sec:authorize="hasRole('ADMIN')">
+        <i class="fa-solid fa-bell"></i>
+        <span id="notificationBadge" class="notification-badge"
+            th:style="${pendingCount > 0 ? 'display:flex' : 'display:none'}"
+            th:text="${pendingCount > 9 ? '9+' : pendingCount}">
+        </span>
+    </button>
+
+    <div class="aura-glow"></div>
+
+    <div class="main-wrapper">
+
+        <header class="welcome-section">
+            <div class="memoji-container" id="interactiveMemoji" onclick="playMemojiAnim()">
+                <img th:src="@{/images/memojiStill.png}" alt="Avatar">
+            </div>
+
+            <div class="brand-header">
+                <span th:text="|أهلاً بك، ${loggedInUsername}|">أهلاً بك، مستخدم</span>
+                <h1>عينك على حلالك</h1>
+                <p>وش اللي شاغل بالك؟ اختار الخدمة اللي تبيها وخلي الباقي علينا.</p>
+            </div>
+        </header>
+        <!-- رسالة نجاح إرسال التقرير -->
+        <div th:if="${reportMessage}" class="success-alert" style="width: 100%; max-width: 900px;">
+            <i class="fa-solid fa-circle-check"></i> <span th:text="${reportMessage}"></span>
+        </div>
+
+        <!-- رسالة خطأ في حال فشل الإرسال -->
+        <div th:if="${reportError}" class="error-box" style="width: 100%; max-width: 900px;">
+            <i class="fa-solid fa-triangle-exclamation"></i> <span th:text="${reportError}"></span>
+        </div>
+        <main class="dashboard-grid">
+
+            <a th:href="@{/register}" class="action-card" sec:authorize="hasRole('ADMIN')">
+                <div class="icon-box"><i class="fa-solid fa-file-signature"></i></div>
+                <h3>تسجيل عقد جديد</h3>
+                <p>إضافة مستأجر وعقد جديد للنظام </p>
+            </a>
+
+            <a th:href="@{/dashboard}" class="action-card">
+                <div class="icon-box"><i class="fa-solid fa-chart-pie"></i></div>
+                <h3>أخبار الحلال</h3>
+                <p>عشان ما تضيع الحسبة.. تابع وش دخل عليك من إيجارات ووش اللي باقي لك عند المستأجرين.</p>
+            </a>
+
+            <a th:href="@{/list}" class="action-card">
+                <div class="icon-box"><i class="fa-solid fa-users"></i></div>
+                <h3>قائمة العقود</h3>
+                <p>تابع العقود المسجلة وشيك بيانات ودفعات المستأجرين</p>
+            </a>
+
+            <a th:href="@{/files}" class="action-card">
+                <div class="icon-box"><i class="fa-solid fa-folder-open"></i></div>
+                <h3>شنطة العقود</h3>
+                <p>بدل حوسة الملفات.. هنا جمعنا لك كل صور الأوراق والمستندات اللي تهمك.</p>
+            </a>
+
+            <a th:href="@{/users}" class="action-card" sec:authorize="hasRole('ADMIN')">
+                <div class="icon-box"><i class="fa-solid fa-folder-open"></i></div>
+                <h3>المستخدمين</h3>
+                <p>لإدارة المستخدمين</p>
+            </a>
+            <!-- بطاقة إرسال التقرير - تظهر للأدمن فقط -->
+            <form th:action="@{/admin/send-manual-report}" method="post" id="reportForm"
+                sec:authorize="hasRole('ADMIN')" style="display: contents;">
+                <a href="javascript:void(0)" class="action-card" id="sendReportBtn" onclick="handleReportSubmit()">
+                    <div class="icon-box" id="reportIcon"><i class="fa-solid fa-paper-plane"></i></div>
+                    <h3 id="reportTitle">أرسل لي العلم الحين</h3>
+                    <p id="reportDesc">تبي الزبدة؟ ضغطة زر ويجيك ملخص بكل اللي لك واللي عليك مباشرة على بريدك.</p>
+                </a>
+            </form>
+
+        </main>
+
+        <footer class="footer-info">
+            <p th:text="|PREMIUM SYSTEM © ${#dates.format(#dates.createNow(), 'yyyy')} - DESIGNED BY THAMER|"></p>
+        </footer>
+
+    </div>
+
+    <div id="approvalModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>طلبات التسجيل المعلقة</h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <div id="emptyState" class="empty-state"
+                    th:style="${!#lists.isEmpty(pendingUsers) ? 'display:none' : ''}">
+                    <i class="fa-regular fa-circle-check"></i>
+                    <p>لا توجد طلبات جديدة حالياً.</p>
+                </div>
+
+                <ul id="pendingUsersList" style="list-style: none; padding: 0;"
+                    th:style="${#lists.isEmpty(pendingUsers) ? 'display:none' : ''}">
+                    <li th:each="user : ${pendingUsers}" class="user-item">
+                        <div class="user-info">
+                            <span class="user-name" th:text="${user.username}">User</span>
+                            <span class="user-email" th:text="${user.email}">email@example.com</span>
+                        </div>
+
+                        <div class="btn-group">
+                            <form th:action="@{/admin/approve-user}" method="post">
+                                <input type="hidden" name="userId" th:value="${user.id}">
+                                <input type="hidden" name="redirectUrl" value="/home">
+                                <button type="submit" class="action-btn-modal approve-btn" title="تفعيل">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                            </form>
+
+                            <form th:action="@{/admin/reject-user}" method="post"
+                                onsubmit="return confirm('هل أنت متأكد من الرفض والحذف؟');">
+                                <input type="hidden" name="userId" th:value="${user.id}">
+                                <button type="submit" class="action-btn-modal reject-btn" title="رفض">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. منطق تبديل الثيم ---
+            const themeBtn = document.getElementById('theme-toggle-btn');
+            const body = document.body;
+            const savedTheme = localStorage.getItem('theme');
+
+            // دالة لتطبيق التنسيق على الزر بناءً على الوضع
+            const updateBtnStyle = (isLight) => {
+                if (isLight) {
+                    themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                    themeBtn.style.background = 'var(--primary-gold)';
+                    themeBtn.style.color = '#fff';
+                } else {
+                    themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                    themeBtn.style.background = 'rgba(180, 148, 87, 0.1)';
+                    themeBtn.style.color = 'var(--primary-gold)';
+                }
+            };
+
+            // التحقق عند تحميل الصفحة
+            if (savedTheme === 'light') {
+                body.classList.add('light-mode');
+                updateBtnStyle(true);
+            }
+
+            // التحقق عند الضغط
+            themeBtn.addEventListener('click', () => {
+                body.classList.toggle('light-mode');
+                const isLight = body.classList.contains('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                updateBtnStyle(isLight);
+            });
+
+            // --- 2. منطق الميموجي ---
+            const memojiContainer = document.querySelector('#interactiveMemoji img');
+            const stillImg = /*[[@{/images/memojiStill.png}]]*/ 'default_still.png';
+            const wavingImg = /*[[@{/images/memoji-waving.png}]]*/ 'default_waving.png';
+
+            window.playMemojiAnim = function () {
+                if (memojiContainer) {
+                    memojiContainer.src = wavingImg;
+                    setTimeout(() => {
+                        memojiContainer.src = stillImg;
+                    }, 1500);
+                }
+            };
+
+            // --- 3. منطق الإشعارات والتحديث التلقائي ---
+            // دوال الفتح والإغلاق
+            window.openModal = function () {
+                document.getElementById('approvalModal').style.display = 'flex';
+            };
+
+            window.closeModal = function () {
+                document.getElementById('approvalModal').style.display = 'none';
+            };
+
+            window.onclick = function (event) {
+                const modal = document.getElementById('approvalModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+
+            // جلب البيانات من السيرفر
+            function fetchNotifications() {
+                fetch('/api/pending-users')
+                    .then(response => response.json())
+                    .then(data => {
+                        updateBadge(data.count);
+                        updateList(data.users);
+                    })
+                    .catch(error => console.error('Error fetching notifications:', error));
+            }
+
+            function updateBadge(count) {
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    if (count > 0) {
+                        badge.style.display = 'flex';
+                        badge.innerText = count > 9 ? '9+' : count;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+
+            function updateList(users) {
+                const listContainer = document.getElementById('pendingUsersList');
+                const emptyState = document.getElementById('emptyState');
+
+                if (!listContainer || !emptyState) return;
+
+                if (users.length === 0) {
+                    listContainer.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    listContainer.innerHTML = '';
+                    return;
+                }
+
+                emptyState.style.display = 'none';
+                listContainer.style.display = 'block';
+                listContainer.innerHTML = '';
+
+                users.forEach(user => {
+                    const li = document.createElement('li');
+                    li.className = 'user-item';
+                    li.innerHTML = `
+                        <div class="user-info">
+                            <span class="user-name">${user.username}</span>
+                            <span class="user-email">${user.email}</span>
+                        </div>
+                        <div class="btn-group">
+                            <form action="/admin/approve-user" method="post">
+                                <input type="hidden" name="userId" value="${user.id}">
+                                <input type="hidden" name="redirectUrl" value="/home">
+                                <button type="submit" class="action-btn-modal approve-btn" title="تفعيل">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                            </form>
+                            <form action="/admin/reject-user" method="post" onsubmit="return confirm('حذف نهائي؟');">
+                                <input type="hidden" name="userId" value="${user.id}">
+                                <button type="submit" class="action-btn-modal reject-btn" title="رفض">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    `;
+                    listContainer.appendChild(li);
+                });
+            }
+
+            // تشغيل التحديث كل 3 ثواني
+            setInterval(fetchNotifications, 3000);
+        });
+
+
+        function handleReportSubmit() {
+            const btn = document.getElementById('sendReportBtn');
+            const icon = document.getElementById('reportIcon');
+            const title = document.getElementById('reportTitle');
+            const desc = document.getElementById('reportDesc');
+
+            // تغيير الشكل لإظهار حالة التحميل
+            btn.style.pointerEvents = 'none'; // منع الضغط مرة أخرى
+            btn.style.opacity = '0.7';
+            icon.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; // أيقونة تحميل تدور
+            title.innerText = 'جاري الإرسال...';
+            desc.innerText = 'يرجى الانتظار، يتم الآن تجميع البيانات وإرسالها.';
+
+            // إرسال الفورم فعلياً
+            document.getElementById('reportForm').submit();
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تسجيل تحصيل | نظام الإدارة الفاخر</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        /* --- 1. المتغيرات والألوان --- */
+        :root {
+            --primary-gold: #b49457;
+            --bg-main: #000000;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-muted: #888888;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --glow-color: rgba(180, 148, 87, 0.08);
+            /* ألوان إضافية لضمان التغطية */
+            --surface-glass: rgba(255, 255, 255, 0.05);
+        }
+
+        /* عند تفعيل الوضع النهاري */
+        body.light-mode {
+            --bg-main: #f4f7f6 !important;
+            /* إجبار تغيير الخلفية */
+            --card-bg: #ffffff !important;
+            --text-primary: #2c3e50 !important;
+            --text-muted: #7f8c8d !important;
+            --border-color: #e0e0e0 !important;
+            --glow-color: rgba(180, 148, 87, 0.15) !important;
+            --surface-glass: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* --- 2. التنسيق العام --- */
+        body {
+            font-family: 'Cairo', sans-serif;
+            /* استخدام المتغيرات مع !important لمنع main.css من التخريب */
+            background-color: var(--bg-main) !important;
+            color: var(--text-primary) !important;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* تحديث الخلفية المتوهجة لتستجيب للثيم */
+        .aura-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%) !important;
+            z-index: -1;
+            pointer-events: none;
+            transition: background 0.3s ease;
+        }
+
+        /* تحديث الحاوية لتأخذ اللون الجديد */
+        .form-container {
+            background: var(--card-bg) !important;
+            /* إجبار */
+            border: 1px solid var(--border-color) !important;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 80px auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* تحديث العناوين */
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary) !important;
+            /* إجبار */
+            margin: 0;
+            transition: color 0.3s ease;
+        }
+
+        /* تحديث الحقول */
+        .custom-input,
+        .custom-select {
+            background: var(--bg-main) !important;
+            /* تأخذ لون الخلفية لتبدو منسجمة */
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* ... باقي التنسيقات كما هي ... */
+        /* =================================
+           نفس الأكواد التي أرسلتها (contracts-style.css)
+           مع بعض التعديلات البسيطة لتناسب نموذج الإدخال
+           ================================= */
+
+        /* --- 1. العناوين (Page Header) --- */
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            color: var(--primary-gold);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* --- 2. حاوية النموذج (مشتقة من stat-card لتوحيد الشكل) --- */
+        .form-container {
+            background: var(--surface-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            /* عرض مناسب للنموذج */
+            margin: 0 auto 80px auto;
+            /* هامش سفلي للنافبار */
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- 3. حقول الإدخال (Inputs & Selects) --- */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* استخدام نفس ستايل search-bar input للحقول */
+        .custom-input,
+        .custom-select {
+            width: 100%;
+            height: 50px;
+            padding: 0 15px;
+            background: rgba(0, 0, 0, 0.2);
+            /* خلفية داكنة قليلاً */
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .custom-input:focus,
+        .custom-select:focus {
+            border-color: var(--primary-gold);
+            background: var(--bg-main);
+            box-shadow: 0 0 0 2px rgba(180, 148, 87, 0.1);
+        }
+
+        .custom-select {
+            appearance: none;
+            /* إخفاء سهم المتصفح الافتراضي */
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23b49457%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: left 15px top 50%;
+            background-size: 10px auto;
+        }
+
+        .helper-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        /* --- 4. زر الحفظ (مشتق من button-primary) --- */
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary-gold), #8a6d35);
+            color: #fff;
+            /* نص أبيض لتباين أفضل */
+            width: 100%;
+            height: 50px;
+            border-radius: 50px;
+            /* كبسولة */
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            box-shadow: 0 4px 15px rgba(180, 148, 87, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(180, 148, 87, 0.4);
+        }
+
+        /* --- 5. رسائل التنبيه (Alerts) --- */
+        .alert-box {
+            background: rgba(25, 135, 84, 0.15);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* --- 6. النافبار السفلي (Mobile Nav) --- */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background: #121212;
+            /* خلفية داكنة */
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            padding-bottom: 10px;
+            /* مساحة لزر الآيفون السفلي */
+        }
+
+        .nav-item {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            gap: 5px;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary-gold);
+        }
+
+        .nav-item.add-button {
+            background: var(--primary-gold);
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            margin-bottom: 35px;
+            /* يرتفع فوق البار */
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(180, 148, 87, 0.4);
+            border: 4px solid var(--bg-main);
+        }
+
+        /* --- تنسيق حاوية زر العودة --- */
+        .nav-header {
+            width: 100%;
+            max-width: 600px;
+            /* نفس عرض الفورم ليكونوا على خط واحد */
+            margin: 20px auto 10px auto;
+            /* مسافة من الأعلى */
+            padding: 0 5px;
+            display: flex;
+            justify-content: flex-start;
+            /* يبدأ من اليمين (لأن الصفحة RTL) */
+        }
+
+        /* --- تنسيق الزر نفسه --- */
+        .premium-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            /* مسافة بين الأيقونة والنص */
+            padding: 10px 24px;
+
+            /* خلفية زجاجية خفيفة جداً */
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 50px;
+            /* حواف دائرية بالكامل (كبسولة) */
+
+            /* لون النص والخط */
+            color: var(--text-secondary) !important;
+            /* لون رمادي أنيق */
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+
+            /* تأثيرات الانتقال */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- التأثير عند مرور الماوس (Hover) --- */
+        .premium-back-link:hover {
+            /* تغيير الخلفية والحدود للذهبي الشفاف */
+            background: rgba(180, 148, 87, 0.1) !important;
+            border-color: var(--primary-gold) !important;
+            color: var(--primary-gold) !important;
+
+            /* حركة خفيفة لليسار (اتجاه العودة) */
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(180, 148, 87, 0.15);
+        }
+
+        /* --- تنسيق الأيقونة داخل الزر --- */
+        .premium-back-link i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        /* حركة إضافية للأيقونة عند الهوفر */
+        .premium-back-link:hover i {
+            transform: scale(1.2);
+            /* تكبير بسيط للأيقونة */
+        }
+
+        /* --- الفوتر --- */
+        .footer-info {
+            margin-top: 50px;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="aura-glow"></div>
+    <button id="theme-toggle-floating" class="floating-btn" onclick="toggleTheme()"
+        style="position:fixed; top:20px; left:20px; z-index:9999; background:rgba(180,148,87,0.1); border:1px solid var(--primary-gold); width:45px; height:45px; border-radius:50%; color:var(--primary-gold); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.3s;">
+        <i class="fa-solid fa-moon"></i>
+    </button>
+    <div class="app-container">
+        <header class="page-header">
+
+            <div class="header-title">
+                <h1>تسجيل مبلغ</h1>
+                <span class="header-subtitle">تسجيل مبلغ لدفعة محددة</span>
+            </div>
+            <div class="nav-header">
+                <a th:href="@{/list}" class="premium-back-link">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span></span>
+                </a>
+            </div>
+        </header>
+
+        <div>
+            <div th:if="${param.success}" class="alert-box">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>تم تسجيل المبلغ بنجاح!</span>
+            </div>
+
+            <form th:action="@{/payments/save}" method="post">
+                <div class="input-group">
+                    <label><i class="fa-solid fa-user-tag"></i> اختر العقد (المستأجر):</label>
+                    <select id="contractSelect" class="custom-select" onchange="loadRecords()">
+                        <option value="">-- اختر من القائمة --</option>
+                        <option th:each="form : ${contracts}" th:value="${form.contract.id}"
+                            th:text="${form.tenant.name} + ' - ' + ${form.contract.location.arabicName}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label><i class="fa-solid fa-calendar-days"></i> الدفعة المستحقة:</label>
+                    <select id="recordSelect" name="recordId" class="custom-select" onchange="fillAmount()" required
+                        disabled>
+                        <option value="">-- يرجى اختيار العقد أولاً --</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label><i class="fa-solid fa-coins"></i> المبلغ المحصّل:</label>
+                    <input type="number" step="0.01" id="amountInput" name="amount" class="custom-input" required
+                        placeholder="0.00">
+                    <span class="helper-text">الرقم الظاهر هو المبلغ المدفوع سابقاً (إن وجد).</span>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <i class="fa-solid fa-check"></i> حفظ
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const apiBaseUrl = /*[[@{/payments/api/records/}]]*/ '/payments/api/records/';
+        /*]]>*/
+    </script>
+
+    <script>
+        // تعريف العناصر والمتغيرات بشكل عام
+        const themeBtn = document.getElementById('theme-toggle-floating');
+        const body = document.body;
+
+        // ==========================================
+        // 1. دالة تهيئة الثيم (تعمل تلقائياً عند الفتح)
+        // ==========================================
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            // إذا كان محفوظاً كـ "light" نطبقه فوراً
+            if (savedTheme === 'light') {
+                applyLightMode();
+            } else {
+                applyDarkMode();
+            }
+        }
+
+        // ==========================================
+        // 2. دالة التبديل (تعمل عند ضغط الزر)
+        // ==========================================
+        function toggleTheme() {
+            const isLight = body.classList.contains('light-mode');
+            if (isLight) {
+                applyDarkMode();
+                localStorage.setItem('theme', 'dark');
+            } else {
+                applyLightMode();
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // دوال مساعدة لتطبيق الألوان وتغيير شكل الزر
+        function applyLightMode() {
+            body.classList.add('light-mode');
+            if (themeBtn) {
+                themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                themeBtn.style.background = 'var(--primary-gold)';
+                themeBtn.style.color = '#fff';
+            }
+        }
+
+        function applyDarkMode() {
+            body.classList.remove('light-mode');
+            if (themeBtn) {
+                themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                themeBtn.style.background = 'rgba(180, 148, 87, 0.1)';
+                themeBtn.style.color = 'var(--primary-gold)';
+            }
+        }
+
+        // ==========================================
+        // 3. دوال جلب البيانات (Global Functions)
+        // ==========================================
+        async function loadRecords() {
+            const contractId = document.getElementById('contractSelect').value;
+            const recordSelect = document.getElementById('recordSelect');
+            const amountInput = document.getElementById('amountInput');
+
+            recordSelect.innerHTML = '<option value="">جاري التحميل...</option>';
+            recordSelect.disabled = true;
+            amountInput.value = '';
+
+            if (!contractId) {
+                recordSelect.innerHTML = '<option value="">-- يرجى اختيار العقد أولاً --</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(apiBaseUrl + contractId);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const records = await response.json();
+
+                recordSelect.innerHTML = '<option value="">-- اختر الدفعة --</option>';
+
+                if (records.length === 0) {
+                    recordSelect.innerHTML = '<option value="">لا توجد دفعات لهذا العقد</option>';
+                }
+
+                records.forEach(r => {
+                    const option = document.createElement('option');
+                    option.value = r.id;
+                    option.dataset.paid = r.paidAmount;
+                    // تنسيق النص داخل القائمة
+                    option.text = `تاريخ: ${r.dueDate} | المستحق: ${r.dueAmount}`;
+                    recordSelect.appendChild(option);
+                });
+
+                recordSelect.disabled = false;
+            } catch (error) {
+                console.error('Error:', error);
+                recordSelect.innerHTML = '<option value="">حدث خطأ في الاتصال</option>';
+            }
+        }
+
+        function fillAmount() {
+            const recordSelect = document.getElementById('recordSelect');
+            const amountInput = document.getElementById('amountInput');
+            const selectedOption = recordSelect.options[recordSelect.selectedIndex];
+
+            if (selectedOption.dataset.paid && selectedOption.dataset.paid != "0" && selectedOption.dataset.paid != "null") {
+                amountInput.value = selectedOption.dataset.paid;
+            } else {
+                amountInput.value = '';
+            }
+        }
+
+        // تشغيل تهيئة الثيم عند تحميل الصفحة مباشرة
+        initTheme();
+
+    </script>
+</body>
+
+</html>
+
+</body>
+
+</html>

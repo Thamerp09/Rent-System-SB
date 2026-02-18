@@ -1,0 +1,593 @@
+/* ===================================================================
+   CONTRACTS PAGE CSS - contracts-style.css
+   (Requires main.css)
+   =================================================================== */
+
+/* =================================
+   1. العناوين (Page Header) & زر الإضافة
+   ================================= */
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+}
+
+.page-header .header-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 1.8rem;
+    font-weight: 300;
+    margin-bottom: 5px;
+}
+
+.header-subtitle {
+    font-size: 0.9rem;
+    color: var(--primary-gold);
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* --- تنسيق زر "إضافة عقد" العلوي (للشاشات المتوسطة والكبيرة) --- */
+.page-header .button-primary {
+    background: linear-gradient(135deg, var(--primary-gold), #8a6d35);
+    color: #e2d5d5;
+    padding: 10px 25px;
+    border-radius: 50px;
+    /* شكل كبسولة */
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
+    box-shadow: 0 4px 15px rgba(180, 148, 87, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    cursor: pointer;
+    width: auto;
+    /* حجم تلقائي حسب النص */
+}
+
+.page-header .button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(180, 148, 87, 0.4);
+}
+
+/* إخفاء الزر في الجوال لأننا نستخدم الناف بار السفلي */
+@media (max-width: 768px) {
+    .mobile-hidden {
+        display: none !important;
+    }
+}
+
+/* =================================
+   2. الإحصائيات (Stats)
+   ================================= */
+.stats-grid.summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 0 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--surface-glass);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-gold);
+}
+
+.stat-card h3 {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.stat-card .stat-number {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.stat-card.success {
+    border-bottom: 3px solid var(--success);
+}
+
+.stat-card.danger {
+    border-bottom: 3px solid var(--danger);
+}
+
+/* =================================
+   3. البحث والفلاتر
+   ================================= */
+.search-bar-container {
+    padding: 0 20px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 20px auto;
+}
+
+.search-bar {
+    position: relative;
+}
+
+.search-bar i {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-gold);
+}
+
+.search-bar input {
+    width: 100%;
+    height: 55px;
+    padding: 0 50px 0 20px;
+    background: var(--surface-glass);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    color: var(--text-main);
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.search-bar input:focus {
+    border-color: var(--primary-gold);
+    background: var(--bg-main);
+}
+
+.city-filter-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    padding: 0 10px;
+}
+
+.filter-button {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.filter-button:hover,
+.filter-button.active {
+    background: var(--primary-gold);
+    color: #000;
+    border-color: var(--primary-gold);
+}
+
+/* =================================
+   4. قائمة العقود
+   ================================= */
+.contract-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.contract-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface-glass);
+    border: 1px solid var(--border-color);
+    padding: 18px 20px;
+    border-radius: 16px;
+    transition: 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.contract-item::after {
+    content: "";
+    position: absolute;
+    top: 15px;
+    bottom: 15px;
+    right: 0;
+    width: 4px;
+    background: var(--primary-gold);
+    border-radius: 4px 0 0 4px;
+}
+
+.contract-item:hover {
+    border-color: var(--primary-gold);
+    background: var(--gold-dim);
+}
+
+.contract-info h3 {
+    font-size: 1.05rem;
+    margin-bottom: 6px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.contract-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.contract-status {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.status-active {
+    background: rgba(25, 135, 84, 0.1);
+    color: var(--success);
+}
+
+.status-expired {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger);
+}
+
+/* أضف هذا الكلاس ليدعم اللون البرتقالي مثلاً لحالة قرب الانتهاء */
+.status-expiring {
+    background: rgba(255, 193, 7, 0.1);
+    /* لون خلفية أصفر/برتقالي شفاف */
+    color: #ffc107;
+    /* لون نص برتقالي */
+}
+
+/* =================================
+   5. المودال والتفاصيل (مطابق للصور)
+   ================================= */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s ease;
+    padding: 15px;
+}
+
+.modal-overlay.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: #1a1a1a;
+    /* خلفية داكنة ثابتة (مطابق للصور) */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    /* ارتفاع آمن للجوال */
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* في الوضع النهاري، يمكنك جعل الخلفية بيضاء إذا رغبت، أو إبقائها داكنة للفخامة */
+body:not(.dark-mode) .modal-content {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+}
+
+body:not(.dark-mode) .modal-content h3 {
+    color: #000;
+}
+
+body:not(.dark-mode) .details-list dd {
+    color: #000;
+}
+
+/* --- رأس المودال --- */
+.modal-content h3 {
+    margin: 0;
+    padding: 30px 20px 10px 20px;
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    text-align: right;
+    direction: rtl;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 30px;
+    height: 30px;
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.modal-body-scroll {
+    padding: 10px 25px 20px 25px;
+    overflow-y: auto;
+}
+
+/* --------------------------------------------------------------------------
+   تنسيق القائمة: مسافات واسعة، لا خطوط، محاذاة موزعة
+   -------------------------------------------------------------------------- */
+.details-list {
+    display: grid;
+    /* عمود للعناوين (حجم تلقائي) وعمود للقيم */
+    grid-template-columns: auto 1fr;
+    /* مسافة رأسية كبيرة لفك الالتصاق */
+    row-gap: 25px;
+    column-gap: 10px;
+    align-items: center;
+    width: 80%;
+    margin: 10px 0;
+}
+
+/* العناوين (Labels - يمين) */
+.details-list dt {
+    font-weight: 600;
+    color: #888888;
+    /* رمادي خفيف */
+    font-size: 0.9rem;
+    text-align: right;
+    margin: 0 10px;
+}
+
+/* القيم (Values - يسار) */
+.details-list dd {
+    font-weight: 500;
+    color: #ffffff;
+    /* أبيض ناصع في الوضع الداكن */
+    font-size: 1rem;
+    margin: 0;
+    border: none;
+    /* إزالة الخطوط */
+    text-align: left;
+    /* القيمة يسار */
+    justify-self: end;
+    /* دفع القيمة لأقصى اليسار المتاح */
+}
+
+/* --------------------------------------------------------------------------
+   تنسيق الأزرار: ترتيب مثالي (2 فوق، 1 تحت)
+   -------------------------------------------------------------------------- */
+.modal-actions {
+    padding: 0 25px 30px 25px;
+    background: transparent;
+    border: none;
+
+    display: grid;
+    /* توزيع الأعمدة بالتساوي */
+    grid-template-columns: 1fr 1fr;
+
+    /* تحديد المناطق:
+       "edit" (تعديل) | "delete" (حذف)
+       "payments" (عرض الدفعات) | "payments" (ممتد)
+    */
+    grid-template-areas:
+        "edit delete"
+        "payments payments";
+
+    gap: 15px;
+    /* مسافة موحدة بين الأزرار */
+}
+
+.button {
+    width: 100%;
+    height: 45px;
+    /* ارتفاع مريح للمس */
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+
+.button:active {
+    transform: scale(0.97);
+}
+
+/* 1. زر "عرض الدفعات" (button-primary في HTML) */
+/* نضعه في الأسفل، بعرض كامل، ولون ذهبي بارز */
+.modal-actions .button-primary {
+    grid-area: payments;
+    background-color: #fffdf9 !important;
+    /* ذهبي */
+    color: #000000 !important;
+    font-weight: 800;
+    box-shadow: 0 5px 15px rgba(180, 148, 87, 0.3);
+    height: 50px;
+    /* أكبر قليلاً للتميز */
+}
+
+/* 2. زر "تعديل" (button-secondary في HTML) */
+.modal-actions .button-secondary {
+    grid-area: edit;
+    background-color: #333333 !important;
+    /* رصاصي */
+    color: #ffffff !important;
+}
+
+/* 3. زر "حذف" (button-danger في HTML) */
+.modal-actions form {
+    grid-area: delete;
+    /* الفورم هو الحاوية لزر الحذف */
+    width: 100%;
+    display: block;
+}
+
+.modal-actions .button-danger {
+    width: 100%;
+    height: 100%;
+    /* ليأخذ نفس ارتفاع زر التعديل */
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    color: #ff4d4d !important;
+}
+
+.modal-actions .button-danger:hover {
+    background-color: #ff4d4d !important;
+    color: #fff !important;
+}
+
+/* =================================
+   6. جدول الدفعات
+   ================================= */
+.table-wrapper {
+    overflow-x: auto;
+    /* يمنع التمرير الجانبي */
+    width: 100%;
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.02);
+    margin-top: 40px;
+    margin-bottom: 40px;
+    border: 1px solid var(--border-color);
+}
+
+.payment-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 420px;
+    text-align: center;
+}
+
+.payment-table th {
+    padding: 15px;
+    color: var(--primary-gold);
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-bottom: 2px solid var(--border-color);
+    background: var(--surface-glass);
+}
+
+.payment-table td {
+    padding: 15px 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+.payment-status {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+.payment-status.paid {
+    background: rgba(25, 135, 84, 0.15);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.payment-status.unpaid {
+    background: rgba(220, 53, 69, 0.15);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+.payment-action-btn {
+    padding: 6px 15px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    border: none;
+    cursor: pointer;
+}
+
+.pay-btn {
+    background-color: var(--success) !important;
+    color: white !important;
+}
+
+.unpay-btn {
+    background-color: var(--warning) !important;
+    color: white !important;
+}
+
+/* =================================
+   7. Responsive Desktop (Adjustments)
+   ================================= */
+@media (min-width: 769px) {
+
+    /* في الديسك توب، نعرض زر الإضافة في الهيدر */
+    .mobile-hidden {
+        display: inline-flex !important;
+    }
+
+    /* ترتيب العرض في الديسك توب */
+    .page-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .page-header .header-title {
+        align-items: flex-start;
+    }
+
+    .stats-grid.summary {
+        flex-direction: row;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .stat-card {
+        max-width: 300px;
+    }
+
+    .contract-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+}

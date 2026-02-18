@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستخدمين | النظام الفاخر</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-gold: #b49457;
+            --bg-main: #000000;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-hover: rgba(180, 148, 87, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --danger: #ff5252;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --glow-color: rgba(180, 148, 87, 0.08);
+        }
+
+        body.light-mode {
+            --bg-main: #f4f7f6;
+            --card-bg: #ffffff;
+            --card-hover: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border-color: #e0e0e0;
+            --glow-color: rgba(180, 148, 87, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            transition: 0.3s;
+        }
+
+        /* الخلفية المتوهجة */
+        .aura-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* الأزرار العائمة */
+        .floating-btn {
+            position: fixed;
+            top: 20px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            text-decoration: none;
+            z-index: 100;
+        }
+
+        .floating-btn:hover {
+            color: var(--primary-gold);
+            border-color: var(--primary-gold);
+            transform: scale(1.1);
+        }
+
+        #theme-toggle-btn {
+            left: 20px;
+        }
+
+        .back-btn {
+            right: 20px;
+        }
+
+        /* الحاوية الرئيسية */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .page-header h2 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .page-header span {
+            color: var(--primary-gold);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        /* رسالة التنبيه (Alert) */
+        .custom-alert {
+            background: rgba(25, 135, 84, 0.1);
+            color: #198754;
+            border: 1px solid rgba(25, 135, 84, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            animation: slideDown 0.5s ease;
+        }
+
+        /* --- شبكة البطاقات (Grid System) --- */
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+        }
+
+        .user-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 0.6s ease backwards;
+        }
+
+        /* تأخير ظهور البطاقات بشكل متتابع */
+        .user-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .user-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .user-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .user-card:nth-child(n+4) {
+            animation-delay: 0.4s;
+        }
+
+        .user-card:hover {
+            border-color: var(--primary-gold);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-mode .user-card {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        body.light-mode .user-card:hover {
+            box-shadow: 0 20px 40px rgba(180, 148, 87, 0.15);
+        }
+
+        /* صورة/أيقونة المستخدم */
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(180, 148, 87, 0.2), rgba(180, 148, 87, 0.05));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            color: var(--primary-gold);
+            font-size: 2rem;
+            border: 1px solid rgba(180, 148, 87, 0.3);
+        }
+
+        .user-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .user-info p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        /* شارة الدور */
+        .role-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+            display: inline-block;
+        }
+
+        .role-badge.admin {
+            background: rgba(180, 148, 87, 0.2);
+            color: var(--primary-gold);
+            border: 1px solid rgba(180, 148, 87, 0.4);
+        }
+
+        .role-badge.user {
+            background: rgba(136, 136, 136, 0.1);
+            color: var(--text-secondary);
+            border: 1px solid rgba(136, 136, 136, 0.2);
+        }
+
+        /* زر الحذف */
+        .delete-btn-wrapper {
+            margin-top: auto;
+            /* يدفع الزر للأسفل دائماً */
+            width: 100%;
+        }
+
+        .btn-delete {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid rgba(255, 82, 82, 0.3);
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+            color: #fff;
+            transform: scale(1.02);
+        }
+
+        /* حالة القائمة الفارغة */
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header h2 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="aura-glow"></div>
+
+    <a th:href="@{/home}" class="floating-btn back-btn" title="العودة للرئيسية">
+        <i class="fa-solid fa-arrow-left"></i>
+    </a>
+
+    <button id="theme-toggle-btn" class="floating-btn" title="تغيير المظهر">
+        <i class="fa-solid fa-moon"></i>
+    </button>
+
+    <div class="container">
+
+        <header class="page-header">
+            <span>MEMBERSHIP</span>
+            <h2>قائمة المستخدمين</h2>
+        </header>
+
+        <div th:if="${param.deleted}" class="custom-alert">
+            <i class="fa-solid fa-check-circle"></i>
+            تم حذف المستخدم بنجاح من النظام
+        </div>
+
+        <div class="users-grid">
+
+            <div th:each="user : ${users}" class="user-card">
+
+                <div class="avatar-circle">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+
+                <div class="user-info">
+                    <h3 th:text="${user.username}">اسم المستخدم</h3>
+                    <p th:text="${user.email}">user@example.com</p>
+                </div>
+
+                <span class="role-badge" th:classappend="${#strings.toString(user.role) == 'ADMIN' ? 'admin' : 'user'}"
+                    th:text="${user.role}">
+                    ROLE
+                </span>
+
+                <div class="delete-btn-wrapper">
+                    <form th:action="@{/users/delete/{id}(id=${user.id})}" method="post"
+                        onsubmit="return confirm('تنبيه: سيتم حذف هذا المستخدم نهائياً. هل أنت متأكد؟');">
+                        <button type="submit" class="btn-delete">
+                            <i class="fa-solid fa-trash-can"></i> حذف الحساب
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+
+            <div th:if="${#lists.isEmpty(users)}" class="empty-state">
+                <i class="fa-solid fa-users-slash"></i>
+                <p>لا يوجد مستخدمين مسجلين في النظام حالياً.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeBtn = document.getElementById('theme-toggle-btn');
+            const body = document.body;
+            const savedTheme = localStorage.getItem('theme');
+
+            // دالة تحديث شكل الزر
+            const updateBtnIcon = (isLight) => {
+                if (isLight) {
+                    themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                    themeBtn.style.color = '#b49457';
+                } else {
+                    themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                    themeBtn.style.color = '';
+                }
+            };
+
+            // تطبيق الثيم المحفوظ
+            if (savedTheme === 'light') {
+                body.classList.add('light-mode');
+                updateBtnIcon(true);
+            }
+
+            // تفعيل الزر
+            themeBtn.addEventListener('click', () => {
+                body.classList.toggle('light-mode');
+                const isLight = body.classList.contains('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                updateBtnIcon(isLight);
+            });
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>تسجيل عقد جديد | نظام الإيجارات</title>
+
+    <!-- خط Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- أيقونات Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ملف CSS المنفصل -->
+    <link rel="stylesheet" th:href="@{/css/register.css}">
+</head>
+
+<body>
+    <!-- توهج ذهبي ناعم متناسق -->
+    <div class="aura-glow"></div>
+
+    <!-- زر تبديل الوضع (يعمل مع السكربت المرفق) -->
+    <button id="theme-toggle-btn" class="theme-toggle-button" aria-label="تبديل الوضع">
+        <i class="fa-solid fa-moon"></i>
+    </button>
+
+    <div class="mobile-viewport-container">
+
+        <!-- العودة للرئيسية - تصميم يسهل لمسه بالجوال -->
+        <div class="nav-header">
+            <a th:href="@{/home}" class="premium-back-link">
+                <i class="fa-solid fa-arrow-right"></i>
+                <span>العودة للرئيسية</span>
+            </a>
+        </div>
+
+        <header class="main-title">
+            <h1>تسجيل عقد إيجار</h1>
+            <p>LEASE REGISTRATION</p>
+        </header>
+
+        <div class="form-scroll-area">
+            <form class="luxury-form" th:action="@{/addTenant}" th:object="${tenantForm}" method="post">
+
+                <input type="hidden" th:field="*{tenant.id}" />
+                <input type="hidden" th:field="*{contract.id}" />
+
+                <!-- اسم المستأجر -->
+                <div class="input-block">
+                    <label for="tenantName">اسم المستأجر</label>
+                    <input type="text" id="tenantName" th:field="*{tenant.name}" required placeholder="">
+                </div>
+
+                <!-- شبكة التواريخ (تلقائية التعديل) -->
+                <div class="responsive-grid">
+                    <div class="input-block">
+                        <label for="contractStart">بداية العقد</label>
+                        <input type="date" id="contractStart" th:field="*{contract.contractStart}" required>
+                    </div>
+                    <div class="input-block">
+                        <label for="contractEnd">نهاية العقد</label>
+                        <input type="date" id="contractEnd" th:field="*{contract.contractEnd}" required>
+                    </div>
+                </div>
+
+                <!-- قيمة الإيجار -->
+                <div class="input-block">
+                    <label for="rentAmount">قيمة الإيجار السنوي</label>
+                    <input type="number" id="rentAmount" th:field="*{contract.rentAmount}" required placeholder="0.00">
+                </div>
+
+                <!-- طريقة الدفع والموقع -->
+                <div class="responsive-grid">
+                    <div class="input-block">
+                        <label for="paymentType">طريقة الدفع</label>
+                        <select id="paymentType" th:field="*{contract.paymentType}" required>
+                            <option value="" disabled selected>-- اختر طريقة الدفع --</option>
+                            <option th:each="type : ${T(com.thamer.Rent_System.model.PaymentType).values()}"
+                                th:value="${type}" th:text="${type.displayName}"></option>
+                        </select>
+                    </div>
+
+                    <div class="input-block">
+                        <label for="location">موقع العقار</label>
+                        <select id="location" th:field="*{contract.location}" required>
+                            <option value="" disabled selected>-- اختر الموقع --</option>
+                            <option th:each="loc : ${T(com.thamer.Rent_System.model.PropertyLocation).values()}"
+                                th:value="${loc}" th:text="${loc.arabicName}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="action-section">
+                    <button type="submit" class="gold-submit-btn">تسجيل العقد الآن</button>
+                </div>
+            </form>
+        </div>
+
+
+    </div>
+
+    <!-- السكربت الخاص بك كما هو بدون تغيير -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const body = document.body;
+
+            const applyTheme = (isDarkMode) => {
+                if (isDarkMode) {
+                    body.classList.add('dark-mode');
+                    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                } else {
+                    body.classList.remove('dark-mode');
+                    themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                }
+            };
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                applyTheme(true);
+            } else if (savedTheme === 'light') {
+                applyTheme(false);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                applyTheme(true);
+            } else {
+                applyTheme(false);
+            }
+
+            themeToggleBtn.addEventListener('click', () => {
+                const isDarkMode = body.classList.toggle('dark-mode');
+                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+                applyTheme(isDarkMode);
+            });
+        });
+    </script>
+</body>
+
+</html>

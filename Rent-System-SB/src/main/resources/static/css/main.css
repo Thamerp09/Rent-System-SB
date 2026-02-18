@@ -1,0 +1,316 @@
+/* ===================================================================
+   MAIN CSS - الملف الرئيسي الموحد
+   (Variables, Reset, Header, Navigation, Theme Toggle)
+   =================================================================== */
+
+:root {
+    /* --- الألوان الأساسية --- */
+    --primary-gold: #b49457;
+    --accent-color: #b49457;
+    /* توافق مع المسميات المختلفة */
+    --gold-hover: #967d4d;
+    --gold-dim: rgba(180, 148, 87, 0.1);
+
+    /* --- الخلفيات --- */
+    --bg-main: #f4f7f6;
+    --card-bg: #ffffff;
+    --surface-glass: rgba(255, 255, 255, 0.9);
+    --hover-bg: #f1f3f5;
+    --input-bg: rgba(0, 0, 0, 0.05);
+
+    /* --- النصوص والحدود --- */
+    --text-main: #1f1f1f;
+    --text-primary: #2c3e50;
+    /* توافق */
+    --text-muted: #666666;
+    --text-secondary: #7f8c8d;
+    /* توافق */
+    --border-color: rgba(0, 0, 0, 0.1);
+
+    /* --- ألوان الحالة --- */
+    --success: #198754;
+    --success-color: #198754;
+    --danger: #dc3545;
+    --danger-color: #dc3545;
+    --warning: #f39c12;
+
+    /* --- الظلال والتأثيرات --- */
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --shadow-glow: 0 5px 15px rgba(180, 148, 87, 0.15);
+    --glow-color: rgba(180, 148, 87, 0.1);
+
+    /* --- الخطوط --- */
+    --font-main: 'Cairo', sans-serif;
+}
+
+/* --- الوضع الليلي --- */
+body.dark-mode {
+    --bg-main: #000000;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --surface-glass: rgba(20, 20, 20, 0.75);
+    --hover-bg: rgba(255, 255, 255, 0.1);
+    --input-bg: rgba(255, 255, 255, 0.06);
+
+    --text-main: #ffffff;
+    --text-primary: #ffffff;
+    --text-muted: #888888;
+    --text-secondary: #888888;
+
+    --border-color: rgba(255, 255, 255, 0.1);
+
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 5px 15px rgba(180, 148, 87, 0.2);
+    --glow-color: rgba(180, 148, 87, 0.06);
+}
+
+/* =================================
+   Reset & Body Layout
+   ================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+a {
+    text-decoration: none !important;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-bottom: 100px;
+    /* مسافة للبار السفلي */
+    position: relative;
+    direction: rtl;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* تأثير الهالة الخلفية (Aura) */
+body::before {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+    z-index: -1;
+    pointer-events: none;
+    transition: background 0.3s ease;
+}
+
+/* الحاوية الرئيسية العامة */
+.app-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* =================================
+   Header (Desktop)
+   ================================= */
+.desktop-header {
+    display: none;
+    /* مخفي في الجوال */
+    background-color: var(--card-bg);
+    /* سيتم تجاوزه في الميديا كويري إذا أردت شفافية */
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+}
+
+.app-brand {
+    font-size: 1.3rem;
+    font-weight: 800;
+    text-decoration: none;
+    color: var(--primary-gold);
+}
+
+.desktop-nav .nav-link {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    transition: 0.3s;
+}
+
+.desktop-nav .nav-link.active,
+.desktop-nav .nav-link:hover {
+    color: var(--primary-gold);
+    background-color: rgba(180, 148, 87, 0.1);
+    border-radius: 10px;
+}
+
+/* =================================
+   Mobile Bottom Navigation (Pill Style)
+   ================================= */
+.mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    max-width: 400px;
+    height: 65px;
+    background-color: rgba(0, 0, 0, 0.75);
+    /* داكن افتراضياً ليتناسق مع الداشبورد */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--border-color);
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+    border-radius: 999px;
+    /* شكل الكبسولة */
+    padding: 0 0.5rem;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    transition: background-color 0.3s;
+}
+
+/* لون الخلفية في الوضع النهاري - أبيض شفاف */
+body:not(.dark-mode) .mobile-bottom-nav {
+    background-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-bottom-nav .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    width: 60px;
+    height: 100%;
+    border-radius: 16px;
+    transition: 0.2s;
+}
+
+.mobile-bottom-nav .nav-item i {
+    font-size: 1.3rem;
+}
+
+.mobile-bottom-nav .nav-item span {
+    /* عرض النص كما في الداشبورد */
+    display: block;
+    font-size: 0.65rem;
+}
+
+.mobile-bottom-nav .nav-item.active {
+    color: var(--primary-gold);
+}
+
+/* زر الإضافة الدائري */
+.nav-item.add-button {
+    background-color: var(--primary-gold);
+    color: #fff !important;
+    /* أيقونة بيضاء */
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    margin-top: -25px;
+    /* رفع الزر للأعلى قليلاً */
+    display: grid;
+    place-items: center;
+    box-shadow: 0 4px 15px rgba(180, 148, 87, 0.3);
+}
+
+.nav-item.add-button i {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+}
+
+.nav-item.add-button span {
+    display: none;
+}
+
+body.dark-mode .nav-item.add-button {
+    color: #000 !important;
+}
+
+/* =================================
+   Theme Toggle Buttons
+   ================================= */
+/* الزر العائم للجوال */
+.theme-toggle-floating {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--primary-gold);
+    color: var(--primary-gold);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: 0.3s;
+    backdrop-filter: blur(5px);
+}
+
+body:not(.dark-mode) .theme-toggle-floating {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: var(--shadow-soft);
+}
+
+/* الزر في الهيدر للديسك توب */
+.theme-toggle-button {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--primary-gold);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+
+.theme-toggle-button:hover {
+    background: var(--hover-bg);
+}
+
+/* =================================
+   Responsive General
+   ================================= */
+@media (min-width: 769px) {
+    .desktop-header {
+        display: flex;
+        /* إزالة الخلفية والحدود في الشاشات الكبيرة لتصبح شفافة كما في تصميم الملفات */
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 15px 0;
+        margin-bottom: 30px;
+    }
+
+    .app-container {
+        padding: 40px;
+    }
+
+    .mobile-bottom-nav,
+    .theme-toggle-floating {
+        display: none;
+    }
+}
